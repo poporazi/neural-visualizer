@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f5f7fb">
+    <title>Нейронная лаборатория</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="#top" aria-label="Нейронная лаборатория — начало">
+          <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><b></b></span>
+          <span>нейронная лаборатория</span>
+        </a>
+        <span class="course-label">НЕЙРОННЫЕ СЕТИ · ТЕМА 1</span>
+      </header>
+
+      <section class="intro" id="top">
+        <p class="eyebrow">ИНТЕРАКТИВНЫЙ ТРЕНАЖЁР</p>
+        <h1>Как работает формальный нейрон</h1>
+        <p>Меняйте параметры и прослеживайте один и тот же расчёт в таблице, схеме и геометрическом представлении.</p>
+      </section>
+
+      <nav class="mode-switch" aria-label="Режим лабораторной работы">
+        <button class="mode-button is-active" data-mode="lab1" aria-pressed="true">Лабораторная 1 <span>единичные веса</span></button>
+        <button class="mode-button" data-mode="lab2" aria-pressed="false">Лабораторная 2 <span>веса и bias</span></button>
+      </nav>
+
+      <section class="control-card card">
+        <div class="section-heading">
+          <div><p class="eyebrow">ПАРАМЕТРЫ ЭКСПЕРИМЕНТА</p><h2>Настройте нейрон</h2></div>
+          <span class="live-indicator"><i></i> расчёт обновляется</span>
+        </div>
+        <div class="controls-grid">
+          <div class="control-field">
+            <div class="field-heading"><label for="functionSelect">Логическая задача</label></div>
+            <select id="functionSelect"><option value="AND">И · AND</option><option value="OR">ИЛИ · OR</option></select>
+          </div>
+          <div class="control-field">
+            <div class="field-heading"><label for="inputCount">Количество входов</label><span class="field-note">n = <output id="inputCountValue">2</output></span></div>
+            <select id="inputCount"><option>2</option><option>3</option><option>4</option><option>5</option></select>
+            <input id="inputCountSlider" class="range-control discrete-range" type="range" min="2" max="5" step="1" value="2" list="inputCountTicks" aria-label="Количество входов, от 2 до 5">
+            <datalist id="inputCountTicks"><option value="2" label="2"></option><option value="3" label="3"></option><option value="4" label="4"></option><option value="5" label="5"></option></datalist>
+            <div class="range-ticks" aria-hidden="true"><span>2</span><span>3</span><span>4</span><span>5</span></div>
+          </div>
+          <div class="control-field threshold-field">
+            <div class="field-heading"><label for="thresholdInput">Порог активации</label><span class="field-note">θ</span></div>
+            <input id="thresholdInput" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" value="2" aria-describedby="thresholdHelp">
+            <input id="thresholdSlider" class="range-control" type="range" step="any" value="2" aria-label="Порог активации тета">
+            <small id="thresholdHelp">Можно вводить любое конечное число.</small>
+          </div>
+        </div>
+        <div id="weightedControls" class="weighted-controls" hidden>
+          <div class="weight-head"><div><h3>Веса входов</h3><p id="presetCaption">Пример A по методичке.</p></div><button id="presetButton" class="text-button" type="button">Другой пример весов</button></div>
+          <div id="weightInputs" class="weight-inputs"></div>
+          <p class="weight-explanation">Положительный вес увеличивает S, отрицательный уменьшает. Например, при w₁ = −1 и x₁ = 1 первый вход добавляет к сумме −1.</p>
+          <div class="bias-row">
+            <label class="check-label"><input id="biasEnabled" type="checkbox"><span class="check-box"></span>Добавить bias <span class="field-note">x₀ = 1</span></label>
+          <div id="biasField" class="bias-field" hidden>
+            <div class="field-heading"><label for="biasInput">Вес смещения</label><span class="field-note">w₀</span></div>
+            <input id="biasInput" type="text" inputmode="decimal" value="-1.5">
+            <input id="biasSlider" class="range-control" type="range" step="any" value="-1.5" aria-label="Вес смещения bias">
+          </div>
+          </div>
+          <button id="compareButton" class="outline-button" type="button">Сравнить с базовой моделью ЛР1</button>
+          <div id="comparisonResult" class="comparison-result" hidden></div>
+        </div>
+        <div class="equation-row">
+          <div class="equation"><span class="equation-label">Сумма</span><strong id="sumFormula">S = x₁ + x₂</strong></div>
+          <div class="equation"><span class="equation-label">Активация Threshold</span><strong>y = 1 при S ≥ θ; иначе y = 0</strong></div>
+          <div class="equation"><span class="equation-label">Диапазон для задачи</span><strong id="validRange">1 &lt; θ ≤ 2</strong></div>
+        </div>
+      </section>
+
+      <section id="validationPanel" class="validation-panel valid" aria-live="polite">
+        <span id="statusIcon" class="status-icon" aria-hidden="true">✓</span>
+        <div><strong id="statusTitle">Нейрон реализует AND</strong><p id="statusMessage">Все входные комбинации совпадают с эталоном.</p></div>
+        <span id="mismatchCount" class="mismatch-count">0 несовпадений</span>
+      </section>
+      <div id="inputError" class="input-error" role="alert" hidden></div>
+
+      <div class="workspace-grid">
+        <section class="card table-card">
+          <div class="section-heading compact"><div><p class="eyebrow">ПОЛНЫЙ ПЕРЕБОР</p><h2>Таблица истинности</h2></div><span id="rowCount" class="row-count">4 набора</span></div>
+          <div class="table-wrap"><table id="truthTable"><thead></thead><tbody></tbody></table></div>
+          <p class="table-hint">Выберите строку, чтобы разобрать вычисление по шагам.</p>
+        </section>
+        <section class="card detail-card">
+          <div class="section-heading compact"><div><p class="eyebrow">ОДИН РАСЧЁТ</p><h2>Разбор строки</h2></div><span id="selectedLabel" class="selected-label">Строка 1</span></div>
+          <div id="calculationSteps" class="calculation-steps"></div>
+          <div class="neuron-diagram-wrap"><div class="diagram-caption">Схема нейрона</div><div id="neuronDiagram"></div></div>
+        </section>
+      </div>
+
+      <section class="card chart-card">
+        <div class="section-heading compact"><div><p class="eyebrow">ГЕОМЕТРИЯ КЛАССИФИКАЦИИ</p><h2 id="chartTitle">Граница решения</h2></div><div class="chart-legend"><span><i class="legend-neuron"></i>выход нейрона</span><span><i class="legend-target"></i>эталон</span></div></div>
+        <div id="chartNotice" class="chart-notice" hidden></div>
+        <div id="chartCanvas" class="chart-canvas" role="img" aria-label="График классификации бинарных входов"></div>
+        <p id="chartCaption" class="chart-caption"></p>
+      </section>
+
+      <details class="xor-card">
+        <summary><span><b>XOR</b> Почему одного порогового нейрона недостаточно?</span><span class="summary-plus" aria-hidden="true">+</span></summary>
+        <div class="xor-content"><p>Классы XOR расположены по диагонали. Одна прямая (линейная граница одного порогового нейрона) не может отделить обе точки класса 1 от обеих точек класса 0.</p><div id="xorDemo"></div><p class="xor-note">Эта демонстрация объясняет ограничение однослойной модели; XOR не включён в проверку лабораторных работ.</p></div>
+      </details>
+
+      <footer><span>Нейронная лаборатория</span><span>МакКаллок–Питтс · бинарная пороговая модель</span></footer>
+    </main>
+    <script type="module" src="src/app.js"></script>
+  </body>
+</html>
